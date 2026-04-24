@@ -5,7 +5,7 @@ REST API for personal finance management built with Spring Boot.
 ## Description
 
 This project is a backend application designed to manage personal finance data.  
-It is being developed as a study and portfolio project, focusing on backend fundamentals and clean architecture using Java and Spring Boot.
+It focuses on backend fundamentals and clean architecture using Java and Spring Boot.
 
 ## Tech Stack
 
