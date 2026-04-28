@@ -20,3 +20,11 @@ Content-Type: application/json
 ###
 ### Buscar usuário por ID
 GET http://localhost:8080/users/1
+
+###
+### Deletar usuário
+DELETE http://localhost:8080/users/1
+
+###
+### Buscar usuário após deletar (deve dar erro)
+GET http://localhost:8080/users/1
