@@ -22,4 +22,9 @@ public class UserService {
     public List<User> listar() {
         return repository.findAll();
     }
+
+    public User buscarPorId(Long id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+    }
 }

@@ -1,7 +1,13 @@
+### Criar usuário
 POST http://localhost:8080/users
 Content-Type: application/json
 
 {
-  "nome": "Pedro",
+  "name": "Pedro",
   "email": "pedro@email.com"
 }
+
+###
+
+### Buscar usuário por ID
+GET http://localhost:8080/users/1

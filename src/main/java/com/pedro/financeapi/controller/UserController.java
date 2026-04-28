@@ -25,4 +25,9 @@ public class UserController {
     public List<User> listar() {
         return service.listar();
     }
+
+    @GetMapping("/{id}")
+    public User buscarPorId(@PathVariable Long id) {
+        return service.buscarPorId(id);
+    }
 }
