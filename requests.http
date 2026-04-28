@@ -8,6 +8,15 @@ Content-Type: application/json
 }
 
 ###
+### Atualizar usuário
+PUT http://localhost:8080/users/1
+Content-Type: application/json
 
+{
+  "name": "Pedro Atualizado",
+  "email": "novo@email.com"
+}
+
+###
 ### Buscar usuário por ID
 GET http://localhost:8080/users/1

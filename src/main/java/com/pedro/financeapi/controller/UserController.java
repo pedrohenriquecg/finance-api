@@ -30,4 +30,9 @@ public class UserController {
     public User buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
+
+    @PutMapping("/{id}")
+    public User atualizar(@PathVariable Long id, @RequestBody User user) {
+        return service.atualizar(id, user);
+    }
 }
