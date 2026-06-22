@@ -42,3 +42,57 @@ Content-Type: application/json
   "name": "",
   "email": "email-invalido"
 }
+
+###
+### Criar transacao
+POST http://localhost:8080/transactions
+Content-Type: application/json
+
+{
+  "description": "Salario",
+  "amount": 5000.00,
+  "type": "INCOME",
+  "category": "Salary",
+  "date": "2026-06-22",
+  "userId": 1
+}
+
+###
+### Listar transacoes
+GET http://localhost:8080/transactions
+
+###
+### Buscar transacao por ID
+GET http://localhost:8080/transactions/1
+
+###
+### Atualizar transacao
+PUT http://localhost:8080/transactions/1
+Content-Type: application/json
+
+{
+  "description": "Mercado",
+  "amount": 250.75,
+  "type": "EXPENSE",
+  "category": "Food",
+  "date": "2026-06-22",
+  "userId": 1
+}
+
+###
+### Deletar transacao
+DELETE http://localhost:8080/transactions/1
+
+###
+### Criar transacao invalida (deve retornar 400)
+POST http://localhost:8080/transactions
+Content-Type: application/json
+
+{
+  "description": "",
+  "amount": 0,
+  "type": "EXPENSE",
+  "category": "",
+  "date": "2026-06-22",
+  "userId": 1
+}

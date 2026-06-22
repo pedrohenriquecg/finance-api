@@ -29,6 +29,11 @@ model       -> Entities (database representation)
 - Get user by ID
 - Update user
 - Delete user
+- Create transaction
+- List transactions
+- Get transaction by ID
+- Update transaction
+- Delete transaction
 - Input validation
 - Error handling
 
