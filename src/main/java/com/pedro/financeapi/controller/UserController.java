@@ -2,6 +2,9 @@ package com.pedro.financeapi.controller;
 
 import com.pedro.financeapi.model.User;
 import com.pedro.financeapi.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,8 +20,8 @@ public class UserController {
     }
 
     @PostMapping
-    public User criar(@RequestBody User user) {
-        return service.salvar(user);
+    public ResponseEntity<User> criar(@Valid @RequestBody User user) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(user));
     }
 
     @GetMapping
@@ -32,12 +35,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public User atualizar(@PathVariable Long id, @RequestBody User user) {
+    public User atualizar(@PathVariable Long id, @Valid @RequestBody User user) {
         return service.atualizar(id, user);
     }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) {
+    public ResponseEntity<Void> deletar(@PathVariable Long id) {
         service.deletar(id);
+        return ResponseEntity.noContent().build();
     }
 }

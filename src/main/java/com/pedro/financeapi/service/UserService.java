@@ -1,5 +1,6 @@
 package com.pedro.financeapi.service;
 
+import com.pedro.financeapi.exception.UserNotFoundException;
 import com.pedro.financeapi.model.User;
 import com.pedro.financeapi.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -25,12 +26,12 @@ public class UserService {
 
     public User buscarPorId(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public User atualizar(Long id, User userAtualizado) {
         User user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         user.setName(userAtualizado.getName());
         user.setEmail(userAtualizado.getEmail());
@@ -40,7 +41,7 @@ public class UserService {
 
     public void deletar(Long id) {
         User user = repository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(id));
 
         repository.delete(user);
     }

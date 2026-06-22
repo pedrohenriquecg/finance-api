@@ -1,4 +1,4 @@
-### Criar usuário
+### Criar usuario
 POST http://localhost:8080/users
 Content-Type: application/json
 
@@ -8,7 +8,11 @@ Content-Type: application/json
 }
 
 ###
-### Atualizar usuário
+### Listar usuarios
+GET http://localhost:8080/users
+
+###
+### Atualizar usuario
 PUT http://localhost:8080/users/1
 Content-Type: application/json
 
@@ -18,13 +22,23 @@ Content-Type: application/json
 }
 
 ###
-### Buscar usuário por ID
+### Buscar usuario por ID
 GET http://localhost:8080/users/1
 
 ###
-### Deletar usuário
+### Deletar usuario
 DELETE http://localhost:8080/users/1
 
 ###
-### Buscar usuário após deletar (deve dar erro)
+### Buscar usuario apos deletar (deve retornar 404)
 GET http://localhost:8080/users/1
+
+###
+### Criar usuario invalido (deve retornar 400)
+POST http://localhost:8080/users
+Content-Type: application/json
+
+{
+  "name": "",
+  "email": "email-invalido"
+}
