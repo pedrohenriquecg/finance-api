@@ -16,6 +16,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -113,6 +114,44 @@ class FinanceApiApplicationTests {
 	}
 
 	@Test
+	void shouldListTransactionsByUser() throws Exception {
+		User user = createUser();
+		User otherUser = createUser("Ana", "ana@email.com");
+
+		createTransaction(user.getId(), "Salary", BigDecimal.valueOf(5000.00), TransactionType.INCOME, "Salary");
+		createTransaction(user.getId(), "Groceries", BigDecimal.valueOf(250.75), TransactionType.EXPENSE, "Food");
+		createTransaction(otherUser.getId(), "Freelance", BigDecimal.valueOf(800.00), TransactionType.INCOME, "Work");
+
+		mockMvc.perform(get("/transactions/user/" + user.getId()))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.length()").value(2))
+				.andExpect(jsonPath("$[*].description", containsInAnyOrder("Salary", "Groceries")))
+				.andExpect(jsonPath("$[*].user.id", containsInAnyOrder(
+						user.getId().intValue(),
+						user.getId().intValue()
+				)));
+	}
+
+	@Test
+	void shouldReturnFinancialSummaryByUser() throws Exception {
+		User user = createUser();
+		User otherUser = createUser("Ana", "ana@email.com");
+
+		createTransaction(user.getId(), "Salary", BigDecimal.valueOf(5000.00), TransactionType.INCOME, "Salary");
+		createTransaction(user.getId(), "Bonus", BigDecimal.valueOf(750.00), TransactionType.INCOME, "Salary");
+		createTransaction(user.getId(), "Rent", BigDecimal.valueOf(1200.50), TransactionType.EXPENSE, "Housing");
+		createTransaction(otherUser.getId(), "Other salary", BigDecimal.valueOf(9000.00), TransactionType.INCOME, "Salary");
+
+		mockMvc.perform(get("/transactions/user/" + user.getId() + "/summary"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.userId").value(user.getId()))
+				.andExpect(jsonPath("$.totalIncome").value(5750.0))
+				.andExpect(jsonPath("$.totalExpense").value(1200.5))
+				.andExpect(jsonPath("$.balance").value(4549.5))
+				.andExpect(jsonPath("$.transactionCount").value(3));
+	}
+
+	@Test
 	void shouldRejectInvalidTransaction() throws Exception {
 		User user = createUser();
 
@@ -179,20 +218,40 @@ class FinanceApiApplicationTests {
 	}
 
 	private User createUser() {
+		return createUser("Pedro", "pedro@email.com");
+	}
+
+	private User createUser(String name, String email) {
 		User user = new User();
-		user.setName("Pedro");
-		user.setEmail("pedro@email.com");
+		user.setName(name);
+		user.setEmail(email);
 		return userRepository.save(user);
 	}
 
 	private Long createTransaction(Long userId) throws Exception {
+		return createTransaction(
+				userId,
+				"Salary",
+				BigDecimal.valueOf(5000.00),
+				TransactionType.INCOME,
+				"Salary"
+		);
+	}
+
+	private Long createTransaction(
+			Long userId,
+			String description,
+			BigDecimal amount,
+			TransactionType type,
+			String category
+	) throws Exception {
 		User user = userRepository.findById(userId).orElseThrow();
 		Transaction transaction = new Transaction();
 
-		transaction.setDescription("Salary");
-		transaction.setAmount(BigDecimal.valueOf(5000.00));
-		transaction.setType(TransactionType.INCOME);
-		transaction.setCategory("Salary");
+		transaction.setDescription(description);
+		transaction.setAmount(amount);
+		transaction.setType(type);
+		transaction.setCategory(category);
 		transaction.setDate(LocalDate.of(2026, 6, 22));
 		transaction.setUser(user);
 

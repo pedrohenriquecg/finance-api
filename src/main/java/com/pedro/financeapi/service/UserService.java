@@ -1,5 +1,7 @@
 package com.pedro.financeapi.service;
 
+import com.pedro.financeapi.dto.UserRequest;
+import com.pedro.financeapi.dto.UserResponse;
 import com.pedro.financeapi.exception.UserNotFoundException;
 import com.pedro.financeapi.model.User;
 import com.pedro.financeapi.repository.UserRepository;
@@ -16,33 +18,43 @@ public class UserService {
         this.repository = repository;
     }
 
-    public User salvar(User user) {
-        return repository.save(user);
+    public UserResponse salvar(UserRequest request) {
+        User user = new User();
+        preencherDados(user, request);
+        return new UserResponse(repository.save(user));
     }
 
-    public List<User> listar() {
-        return repository.findAll();
+    public List<UserResponse> listar() {
+        return repository.findAll()
+                .stream()
+                .map(UserResponse::new)
+                .toList();
     }
 
-    public User buscarPorId(Long id) {
+    public UserResponse buscarPorId(Long id) {
+        return new UserResponse(buscarEntidadePorId(id));
+    }
+
+    public UserResponse atualizar(Long id, UserRequest request) {
+        User user = buscarEntidadePorId(id);
+
+        preencherDados(user, request);
+        return new UserResponse(repository.save(user));
+    }
+
+    private User buscarEntidadePorId(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(id));
     }
 
-    public User atualizar(Long id, User userAtualizado) {
-        User user = repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
-
-        user.setName(userAtualizado.getName());
-        user.setEmail(userAtualizado.getEmail());
-
-        return repository.save(user);
-    }
-
     public void deletar(Long id) {
-        User user = repository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+        User user = buscarEntidadePorId(id);
 
         repository.delete(user);
+    }
+
+    private void preencherDados(User user, UserRequest request) {
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
     }
 }

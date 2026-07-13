@@ -34,8 +34,30 @@ model       -> Entities (database representation)
 - Get transaction by ID
 - Update transaction
 - Delete transaction
+- List transactions by user
+- Get user financial summary
 - Input validation
 - Error handling
+
+## Main Endpoints
+
+### Users
+
+- `POST /users`
+- `GET /users`
+- `GET /users/{id}`
+- `PUT /users/{id}`
+- `DELETE /users/{id}`
+
+### Transactions
+
+- `POST /transactions`
+- `GET /transactions`
+- `GET /transactions/{id}`
+- `PUT /transactions/{id}`
+- `DELETE /transactions/{id}`
+- `GET /transactions/user/{userId}`
+- `GET /transactions/user/{userId}/summary`
 
 ## How to Run
 

@@ -1,7 +1,8 @@
 package com.pedro.financeapi.controller;
 
+import com.pedro.financeapi.dto.FinancialSummaryResponse;
 import com.pedro.financeapi.dto.TransactionRequest;
-import com.pedro.financeapi.model.Transaction;
+import com.pedro.financeapi.dto.TransactionResponse;
 import com.pedro.financeapi.service.TransactionService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -21,22 +22,32 @@ public class TransactionController {
     }
 
     @PostMapping
-    public ResponseEntity<Transaction> criar(@Valid @RequestBody TransactionRequest request) {
+    public ResponseEntity<TransactionResponse> criar(@Valid @RequestBody TransactionRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(service.salvar(request));
     }
 
     @GetMapping
-    public List<Transaction> listar() {
+    public List<TransactionResponse> listar() {
         return service.listar();
     }
 
+    @GetMapping("/user/{userId}")
+    public List<TransactionResponse> listarPorUsuario(@PathVariable Long userId) {
+        return service.listarPorUsuario(userId);
+    }
+
+    @GetMapping("/user/{userId}/summary")
+    public FinancialSummaryResponse resumoPorUsuario(@PathVariable Long userId) {
+        return service.resumoPorUsuario(userId);
+    }
+
     @GetMapping("/{id}")
-    public Transaction buscarPorId(@PathVariable Long id) {
+    public TransactionResponse buscarPorId(@PathVariable Long id) {
         return service.buscarPorId(id);
     }
 
     @PutMapping("/{id}")
-    public Transaction atualizar(@PathVariable Long id, @Valid @RequestBody TransactionRequest request) {
+    public TransactionResponse atualizar(@PathVariable Long id, @Valid @RequestBody TransactionRequest request) {
         return service.atualizar(id, request);
     }
 

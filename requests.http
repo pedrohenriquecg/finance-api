@@ -62,6 +62,14 @@ Content-Type: application/json
 GET http://localhost:8080/transactions
 
 ###
+### Listar transacoes por usuario
+GET http://localhost:8080/transactions/user/1
+
+###
+### Resumo financeiro por usuario
+GET http://localhost:8080/transactions/user/1/summary
+
+###
 ### Buscar transacao por ID
 GET http://localhost:8080/transactions/1
 
