@@ -36,6 +36,9 @@ build/
 .env
 .env.*
 
+# Local API client files
+*.local.http
+
 # Secrets
 *.pem
 *.key

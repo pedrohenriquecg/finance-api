@@ -1,4 +1,5 @@
 @baseUrl = http://localhost:8080
+# Keep real tokens in a *.local.http file, which is ignored by Git.
 @token = paste-token-here
 
 ### Registrar usuario

@@ -25,9 +25,17 @@ public class JwtService {
     private final long expirationMinutes;
 
     public JwtService(
-            @Value("${security.jwt.secret:finance-api-dev-secret-change-me}") String secret,
+            @Value("${security.jwt.secret}") String secret,
             @Value("${security.jwt.expiration-minutes:60}") long expirationMinutes
     ) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT secret must be configured");
+        }
+
+        if (secret.length() < 32) {
+            throw new IllegalStateException("JWT secret must have at least 32 characters");
+        }
+
         this.secret = secret;
         this.expirationMinutes = expirationMinutes;
     }

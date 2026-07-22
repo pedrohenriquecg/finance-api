@@ -93,6 +93,23 @@ class AuthControllerIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.name").value("Name is required"))
                 .andExpect(jsonPath("$.email").value("Email must be valid"))
-                .andExpect(jsonPath("$.password").value("Password must have at least 6 characters"));
+                .andExpect(jsonPath("$.password").value("Password must have between 8 and 72 characters"));
+    }
+
+    @Test
+    void shouldRejectTooLongNameOnRegister() throws Exception {
+        String longName = "a".repeat(101);
+
+        mockMvc.perform(post("/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "%s",
+                                  "email": "pedro@email.com",
+                                  "password": "password123"
+                                }
+                                """.formatted(longName)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.name").value("Name must have at most 100 characters"));
     }
 }

@@ -4,6 +4,7 @@ import com.pedro.financeapi.model.TransactionType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 public class TransactionRequest {
 
     @NotBlank(message = "Description is required")
+    @Size(max = 255, message = "Description must have at most 255 characters")
     private String description;
 
     @NotNull(message = "Amount is required")
@@ -21,6 +23,7 @@ public class TransactionRequest {
     private TransactionType type;
 
     @NotBlank(message = "Category is required")
+    @Size(max = 255, message = "Category must have at most 255 characters")
     private String category;
 
     @NotNull(message = "Date is required")

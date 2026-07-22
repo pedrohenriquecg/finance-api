@@ -3,6 +3,7 @@ package com.pedro.financeapi.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "users")
@@ -13,15 +14,19 @@ public class User {
     private Long id;
 
     @NotBlank(message = "Name is required")
+    @Size(max = 100, message = "Name must have at most 100 characters")
+    @Column(nullable = false, length = 100)
     private String name;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
-    @Column(nullable = false, unique = true)
+    @Size(max = 255, message = "Email must have at most 255 characters")
+    @Column(nullable = false, unique = true, length = 255)
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Column(nullable = false)
+    @Size(max = 255, message = "Password hash must have at most 255 characters")
+    @Column(nullable = false, length = 255)
     private String passwordHash;
 
     public User() {}

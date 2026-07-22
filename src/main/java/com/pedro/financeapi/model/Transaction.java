@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,6 +18,8 @@ public class Transaction {
     private Long id;
 
     @NotBlank(message = "Description is required")
+    @Size(max = 255, message = "Description must have at most 255 characters")
+    @Column(nullable = false, length = 255)
     private String description;
 
     @NotNull(message = "Amount is required")
@@ -28,6 +31,8 @@ public class Transaction {
     private TransactionType type;
 
     @NotBlank(message = "Category is required")
+    @Size(max = 255, message = "Category must have at most 255 characters")
+    @Column(nullable = false, length = 255)
     private String category;
 
     @NotNull(message = "Date is required")

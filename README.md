@@ -82,13 +82,14 @@ cd finance-api
 Run the application:
 
 ```bash
-./mvnw spring-boot:run
+JWT_SECRET=replace-with-at-least-32-characters ./mvnw spring-boot:run
 ```
 
 On Windows:
 
-```bash
-mvnw.cmd spring-boot:run
+```powershell
+$env:JWT_SECRET="replace-with-at-least-32-characters"
+.\mvnw.cmd spring-boot:run
 ```
 
 The API will be available at:

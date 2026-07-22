@@ -108,6 +108,47 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
     }
 
     @Test
+    void shouldRejectTooLongTransactionDescription() throws Exception {
+        User user = createUser();
+        String longDescription = "a".repeat(256);
+
+        mockMvc.perform(post("/transactions")
+                        .header("Authorization", bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "description": "%s",
+                                  "amount": 10.00,
+                                  "type": "EXPENSE",
+                                  "category": "Food",
+                                  "date": "2026-06-22"
+                                }
+                                """.formatted(longDescription)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.description").value("Description must have at most 255 characters"));
+    }
+
+    @Test
+    void shouldRejectInvalidTransactionRequestBody() throws Exception {
+        User user = createUser();
+
+        mockMvc.perform(post("/transactions")
+                        .header("Authorization", bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "description": "Market",
+                                  "amount": 10.00,
+                                  "type": "INVALID",
+                                  "category": "Food",
+                                  "date": "2026-06-22"
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Invalid request body"));
+    }
+
+    @Test
     void shouldReturnNotFoundWhenTransactionDoesNotExist() throws Exception {
         User user = createUser();
 
