@@ -4,12 +4,11 @@ import com.pedro.financeapi.dto.FinancialSummaryResponse;
 import com.pedro.financeapi.dto.TransactionRequest;
 import com.pedro.financeapi.dto.TransactionResponse;
 import com.pedro.financeapi.exception.TransactionNotFoundException;
-import com.pedro.financeapi.exception.UserNotFoundException;
 import com.pedro.financeapi.model.Transaction;
 import com.pedro.financeapi.model.TransactionType;
 import com.pedro.financeapi.model.User;
 import com.pedro.financeapi.repository.TransactionRepository;
-import com.pedro.financeapi.repository.UserRepository;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -19,49 +18,43 @@ import java.util.List;
 public class TransactionService {
 
     private final TransactionRepository transactionRepository;
-    private final UserRepository userRepository;
 
-    public TransactionService(TransactionRepository transactionRepository, UserRepository userRepository) {
+    public TransactionService(TransactionRepository transactionRepository) {
         this.transactionRepository = transactionRepository;
-        this.userRepository = userRepository;
     }
 
-    public TransactionResponse salvar(TransactionRequest request) {
+    public TransactionResponse salvar(TransactionRequest request, User authenticatedUser) {
         Transaction transaction = new Transaction();
-        preencherDados(transaction, request);
+        preencherDados(transaction, request, authenticatedUser);
         return new TransactionResponse(transactionRepository.save(transaction));
     }
 
-    public List<TransactionResponse> listar() {
-        return transactionRepository.findAll()
+    public List<TransactionResponse> listar(User authenticatedUser) {
+        return transactionRepository.findByUserIdOrderByDateDescIdDesc(authenticatedUser.getId())
                 .stream()
                 .map(TransactionResponse::new)
                 .toList();
     }
 
-    public List<TransactionResponse> listarPorUsuario(Long userId) {
-        buscarUsuarioPorId(userId);
+    public List<TransactionResponse> listarPorUsuario(Long userId, User authenticatedUser) {
+        validarDono(userId, authenticatedUser);
 
-        return transactionRepository.findByUserId(userId)
-                .stream()
-                .map(TransactionResponse::new)
-                .toList();
+        return listar(authenticatedUser);
     }
 
-    public TransactionResponse buscarPorId(Long id) {
-        return new TransactionResponse(buscarEntidadePorId(id));
+    public TransactionResponse buscarPorId(Long id, User authenticatedUser) {
+        return new TransactionResponse(buscarEntidadePorId(id, authenticatedUser));
     }
 
-    public TransactionResponse atualizar(Long id, TransactionRequest request) {
-        Transaction transaction = buscarEntidadePorId(id);
+    public TransactionResponse atualizar(Long id, TransactionRequest request, User authenticatedUser) {
+        Transaction transaction = buscarEntidadePorId(id, authenticatedUser);
 
-        preencherDados(transaction, request);
+        preencherDados(transaction, request, authenticatedUser);
         return new TransactionResponse(transactionRepository.save(transaction));
     }
 
-    public FinancialSummaryResponse resumoPorUsuario(Long userId) {
-        User user = buscarUsuarioPorId(userId);
-        List<Transaction> transactions = transactionRepository.findByUserId(user.getId());
+    public FinancialSummaryResponse resumoPorUsuario(User authenticatedUser) {
+        List<Transaction> transactions = transactionRepository.findByUserId(authenticatedUser.getId());
 
         BigDecimal totalIncome = BigDecimal.ZERO;
         BigDecimal totalExpense = BigDecimal.ZERO;
@@ -77,7 +70,7 @@ public class TransactionService {
         }
 
         return new FinancialSummaryResponse(
-                user.getId(),
+                authenticatedUser.getId(),
                 totalIncome,
                 totalExpense,
                 totalIncome.subtract(totalExpense),
@@ -85,30 +78,35 @@ public class TransactionService {
         );
     }
 
-    public void deletar(Long id) {
-        Transaction transaction = buscarEntidadePorId(id);
+    public FinancialSummaryResponse resumoPorUsuario(Long userId, User authenticatedUser) {
+        validarDono(userId, authenticatedUser);
+
+        return resumoPorUsuario(authenticatedUser);
+    }
+
+    public void deletar(Long id, User authenticatedUser) {
+        Transaction transaction = buscarEntidadePorId(id, authenticatedUser);
 
         transactionRepository.delete(transaction);
     }
 
-    private void preencherDados(Transaction transaction, TransactionRequest request) {
-        User user = buscarUsuarioPorId(request.getUserId());
-
+    private void preencherDados(Transaction transaction, TransactionRequest request, User authenticatedUser) {
         transaction.setDescription(request.getDescription());
         transaction.setAmount(request.getAmount());
         transaction.setType(request.getType());
         transaction.setCategory(request.getCategory());
         transaction.setDate(request.getDate());
-        transaction.setUser(user);
+        transaction.setUser(authenticatedUser);
     }
 
-    private Transaction buscarEntidadePorId(Long id) {
-        return transactionRepository.findById(id)
+    private Transaction buscarEntidadePorId(Long id, User authenticatedUser) {
+        return transactionRepository.findByIdAndUserId(id, authenticatedUser.getId())
                 .orElseThrow(() -> new TransactionNotFoundException(id));
     }
 
-    private User buscarUsuarioPorId(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException(id));
+    private void validarDono(Long userId, User authenticatedUser) {
+        if (!authenticatedUser.getId().equals(userId)) {
+            throw new AccessDeniedException("You can only access your own financial data");
+        }
     }
 }

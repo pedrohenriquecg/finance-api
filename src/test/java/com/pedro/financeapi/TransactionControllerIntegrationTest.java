@@ -24,6 +24,7 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         User user = createUser();
 
         mockMvc.perform(post("/transactions")
+                        .header("Authorization", bearerToken(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -31,10 +32,9 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
                                   "amount": 5000.00,
                                   "type": "INCOME",
                                   "category": "Salary",
-                                  "date": "2026-06-22",
-                                  "userId": %d
+                                  "date": "2026-06-22"
                                 }
-                                """.formatted(user.getId())))
+                                """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.description").value("Salary"))
@@ -54,7 +54,8 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         createTransaction(user.getId(), "Groceries", BigDecimal.valueOf(250.75), TransactionType.EXPENSE, "Food");
         createTransaction(otherUser.getId(), "Freelance", BigDecimal.valueOf(800.00), TransactionType.INCOME, "Work");
 
-        mockMvc.perform(get("/transactions/user/" + user.getId()))
+        mockMvc.perform(get("/transactions")
+                        .header("Authorization", bearerToken(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[*].description", containsInAnyOrder("Salary", "Groceries")))
@@ -74,7 +75,8 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         createTransaction(user.getId(), "Rent", BigDecimal.valueOf(1200.50), TransactionType.EXPENSE, "Housing");
         createTransaction(otherUser.getId(), "Other salary", BigDecimal.valueOf(9000.00), TransactionType.INCOME, "Salary");
 
-        mockMvc.perform(get("/transactions/user/" + user.getId() + "/summary"))
+        mockMvc.perform(get("/transactions/summary")
+                        .header("Authorization", bearerToken(user)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userId").value(user.getId()))
                 .andExpect(jsonPath("$.totalIncome").value(5750.0))
@@ -88,6 +90,7 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         User user = createUser();
 
         mockMvc.perform(post("/transactions")
+                        .header("Authorization", bearerToken(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -95,10 +98,9 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
                                   "amount": 0,
                                   "type": "EXPENSE",
                                   "category": "",
-                                  "date": "2026-06-22",
-                                  "userId": %d
+                                  "date": "2026-06-22"
                                 }
-                                """.formatted(user.getId())))
+                                """))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.description").value("Description is required"))
                 .andExpect(jsonPath("$.amount").value("Amount must be greater than zero"))
@@ -107,7 +109,10 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
 
     @Test
     void shouldReturnNotFoundWhenTransactionDoesNotExist() throws Exception {
-        mockMvc.perform(get("/transactions/999"))
+        User user = createUser();
+
+        mockMvc.perform(get("/transactions/999")
+                        .header("Authorization", bearerToken(user)))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Transaction not found with id: 999")));
     }
@@ -118,6 +123,7 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         Long transactionId = createTransaction(user.getId());
 
         mockMvc.perform(put("/transactions/" + transactionId)
+                        .header("Authorization", bearerToken(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -125,10 +131,9 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
                                   "amount": 250.75,
                                   "type": "EXPENSE",
                                   "category": "Food",
-                                  "date": "2026-06-22",
-                                  "userId": %d
+                                  "date": "2026-06-22"
                                 }
-                                """.formatted(user.getId())))
+                                """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(transactionId))
                 .andExpect(jsonPath("$.description").value("Groceries"))
@@ -142,10 +147,41 @@ class TransactionControllerIntegrationTest extends IntegrationTestSupport {
         User user = createUser();
         Long transactionId = createTransaction(user.getId());
 
-        mockMvc.perform(delete("/transactions/" + transactionId))
+        mockMvc.perform(delete("/transactions/" + transactionId)
+                        .header("Authorization", bearerToken(user)))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/transactions/" + transactionId))
+        mockMvc.perform(get("/transactions/" + transactionId)
+                        .header("Authorization", bearerToken(user)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldRejectUnauthenticatedTransactionRequest() throws Exception {
+        mockMvc.perform(get("/transactions"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRejectAccessToAnotherUsersTransactions() throws Exception {
+        User user = createUser();
+        User otherUser = createUser("Ana", "ana@email.com");
+
+        mockMvc.perform(get("/transactions/user/" + otherUser.getId())
+                        .header("Authorization", bearerToken(user)))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.error").value("You can only access your own financial data"));
+    }
+
+    @Test
+    void shouldReturnNotFoundWhenTransactionBelongsToAnotherUser() throws Exception {
+        User user = createUser();
+        User otherUser = createUser("Ana", "ana@email.com");
+        Long transactionId = createTransaction(otherUser.getId());
+
+        mockMvc.perform(get("/transactions/" + transactionId)
+                        .header("Authorization", bearerToken(user)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(containsString("Transaction not found with id: " + transactionId)));
     }
 }

@@ -1,34 +1,21 @@
-package com.pedro.financeapi.model;
+package com.pedro.financeapi.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "users")
-public class User {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+public class AuthRegisterRequest {
 
     @NotBlank(message = "Name is required")
     private String name;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email must be valid")
-    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Column(nullable = false)
-    private String passwordHash;
-
-    public User() {}
-
-    public Long getId() {
-        return id;
-    }
+    @Size(min = 6, message = "Password must have at least 6 characters")
+    private String password;
 
     public String getName() {
         return name;
@@ -46,11 +33,11 @@ public class User {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

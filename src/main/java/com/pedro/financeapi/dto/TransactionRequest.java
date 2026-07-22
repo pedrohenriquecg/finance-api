@@ -26,9 +26,6 @@ public class TransactionRequest {
     @NotNull(message = "Date is required")
     private LocalDate date;
 
-    @NotNull(message = "User id is required")
-    private Long userId;
-
     public String getDescription() {
         return description;
     }
@@ -67,13 +64,5 @@ public class TransactionRequest {
 
     public void setDate(LocalDate date) {
         this.date = date;
-    }
-
-    public Long getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Long userId) {
-        this.userId = userId;
     }
 }

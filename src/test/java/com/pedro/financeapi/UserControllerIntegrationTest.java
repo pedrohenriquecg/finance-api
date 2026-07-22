@@ -1,52 +1,89 @@
 package com.pedro.financeapi;
 
+import com.pedro.financeapi.model.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
-import static org.hamcrest.Matchers.containsString;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class UserControllerIntegrationTest extends IntegrationTestSupport {
 
     @Test
-    void shouldCreateUser() throws Exception {
-        mockMvc.perform(post("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "name": "Pedro",
-                                  "email": "pedro@email.com"
-                                }
-                                """))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").exists())
+    void shouldReturnAuthenticatedUserProfile() throws Exception {
+        User user = createUser();
+
+        mockMvc.perform(get("/users/me")
+                        .header("Authorization", bearerToken(user)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.getId()))
                 .andExpect(jsonPath("$.name").value("Pedro"))
                 .andExpect(jsonPath("$.email").value("pedro@email.com"));
     }
 
     @Test
-    void shouldRejectInvalidUser() throws Exception {
-        mockMvc.perform(post("/users")
+    void shouldUpdateAuthenticatedUserProfile() throws Exception {
+        User user = createUser();
+
+        mockMvc.perform(put("/users/me")
+                        .header("Authorization", bearerToken(user))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "name": "",
-                                  "email": "email-invalido"
+                                  "name": "Pedro Atualizado",
+                                  "email": "novo@email.com"
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.name").value("Name is required"))
-                .andExpect(jsonPath("$.email").value("Email must be valid"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(user.getId()))
+                .andExpect(jsonPath("$.name").value("Pedro Atualizado"))
+                .andExpect(jsonPath("$.email").value("novo@email.com"));
     }
 
     @Test
-    void shouldReturnNotFoundWhenUserDoesNotExist() throws Exception {
-        mockMvc.perform(get("/users/999"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(containsString("User not found with id: 999")));
+    void shouldRejectDuplicateEmailWhenUpdatingProfile() throws Exception {
+        User user = createUser();
+        createUser("Ana", "ana@email.com");
+
+        mockMvc.perform(put("/users/me")
+                        .header("Authorization", bearerToken(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "name": "Pedro",
+                                  "email": "ana@email.com"
+                                }
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Email is already in use"));
+    }
+
+    @Test
+    void shouldDeleteAuthenticatedUserWithoutTransactions() throws Exception {
+        User user = createUser();
+
+        mockMvc.perform(delete("/users/me")
+                        .header("Authorization", bearerToken(user)))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void shouldRejectDeletingUserWithTransactions() throws Exception {
+        User user = createUser();
+        createTransaction(user.getId());
+
+        mockMvc.perform(delete("/users/me")
+                        .header("Authorization", bearerToken(user)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("User has transactions and cannot be deleted"));
+    }
+
+    @Test
+    void shouldRejectUnauthenticatedProfileRequest() throws Exception {
+        mockMvc.perform(get("/users/me"))
+                .andExpect(status().isUnauthorized());
     }
 }

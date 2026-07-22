@@ -13,6 +13,7 @@ It focuses on backend fundamentals and clean architecture using Java and Spring 
 - Spring Boot
 - Maven
 - Spring Data JPA
+- Spring Security
 - H2 Database (in-memory)
 
 ## Project Structure
@@ -24,40 +25,50 @@ model       -> Entities (database representation)
 
 ## Features
 
-- Create user
-- List users
-- Get user by ID
-- Update user
-- Delete user
-- Create transaction
-- List transactions
-- Get transaction by ID
-- Update transaction
-- Delete transaction
-- List transactions by user
-- Get user financial summary
+- Register user
+- Login with Bearer token
+- Get authenticated user profile
+- Update authenticated user profile
+- Delete authenticated user profile when it has no transactions
+- Create authenticated user transactions
+- List authenticated user transactions
+- Get authenticated user transaction by ID
+- Update authenticated user transaction
+- Delete authenticated user transaction
+- Get authenticated user financial summary
+- Data ownership validation
 - Input validation
 - Error handling
 
 ## Main Endpoints
 
+### Auth
+
+- `POST /auth/register`
+- `POST /auth/login`
+
 ### Users
 
-- `POST /users`
-- `GET /users`
-- `GET /users/{id}`
-- `PUT /users/{id}`
-- `DELETE /users/{id}`
+- `GET /users/me`
+- `PUT /users/me`
+- `DELETE /users/me`
 
 ### Transactions
 
 - `POST /transactions`
 - `GET /transactions`
+- `GET /transactions/summary`
 - `GET /transactions/{id}`
 - `PUT /transactions/{id}`
 - `DELETE /transactions/{id}`
-- `GET /transactions/user/{userId}`
-- `GET /transactions/user/{userId}/summary`
+
+Protected endpoints require:
+
+```text
+Authorization: Bearer <token>
+```
+
+Transaction requests do not receive `userId`. The authenticated user is always the transaction owner.
 
 ## How to Run
 
@@ -84,4 +95,16 @@ The API will be available at:
 
 ```text
 http://localhost:8080
+```
+
+Run tests:
+
+```bash
+./mvnw test
+```
+
+On Windows:
+
+```bash
+mvnw.cmd test
 ```

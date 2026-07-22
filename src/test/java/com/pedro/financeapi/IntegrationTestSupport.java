@@ -5,10 +5,12 @@ import com.pedro.financeapi.model.TransactionType;
 import com.pedro.financeapi.model.User;
 import com.pedro.financeapi.repository.TransactionRepository;
 import com.pedro.financeapi.repository.UserRepository;
+import com.pedro.financeapi.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -27,6 +29,12 @@ abstract class IntegrationTestSupport {
     @Autowired
     protected TransactionRepository transactionRepository;
 
+    @Autowired
+    protected PasswordEncoder passwordEncoder;
+
+    @Autowired
+    protected JwtService jwtService;
+
     @BeforeEach
     void cleanDatabase() {
         transactionRepository.deleteAll();
@@ -41,7 +49,12 @@ abstract class IntegrationTestSupport {
         User user = new User();
         user.setName(name);
         user.setEmail(email);
+        user.setPasswordHash(passwordEncoder.encode("password123"));
         return userRepository.save(user);
+    }
+
+    protected String bearerToken(User user) {
+        return "Bearer " + jwtService.generateToken(user);
     }
 
     protected Long createTransaction(Long userId) {
