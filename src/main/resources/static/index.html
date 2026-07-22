@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance API</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <main class="container">
+        <header class="header">
+            <div>
+                <p>Finance API</p>
+                <h1>Visualizador financeiro</h1>
+            </div>
+            <button id="logoutButton" type="button" hidden>Sair</button>
+        </header>
+
+        <section id="authView" class="grid">
+            <form id="loginForm" class="card">
+                <h2>Entrar</h2>
+                <label>Email<input name="email" type="email" required></label>
+                <label>Senha<input name="password" type="password" required></label>
+                <button type="submit">Entrar</button>
+            </form>
+
+            <form id="registerForm" class="card">
+                <h2>Cadastrar</h2>
+                <label>Nome<input name="name" maxlength="100" required></label>
+                <label>Email<input name="email" type="email" maxlength="255" required></label>
+                <label>Senha<input name="password" type="password" minlength="8" maxlength="72" required></label>
+                <button type="submit">Criar conta</button>
+            </form>
+        </section>
+
+        <section id="dashboardView" hidden>
+            <section class="user-card card">
+                <div>
+                    <strong id="userName">Usuario</strong>
+                    <span id="userEmail"></span>
+                </div>
+                <button id="refreshButton" type="button">Atualizar</button>
+            </section>
+
+            <section class="summary">
+                <article class="card">
+                    <span>Saldo</span>
+                    <strong id="balanceValue">R$ 0,00</strong>
+                </article>
+                <article class="card">
+                    <span>Entradas</span>
+                    <strong id="incomeValue">R$ 0,00</strong>
+                </article>
+                <article class="card">
+                    <span>Saidas</span>
+                    <strong id="expenseValue">R$ 0,00</strong>
+                </article>
+                <article class="card">
+                    <span>Total</span>
+                    <strong id="countValue">0</strong>
+                </article>
+            </section>
+
+            <form id="transactionForm" class="card">
+                <h2>Adicionar transacao</h2>
+                <div class="form-grid">
+                    <label>Descricao<input name="description" maxlength="255" required></label>
+                    <label>Valor<input name="amount" type="number" min="0.01" step="0.01" required></label>
+                    <label>
+                        Tipo
+                        <select name="type" required>
+                            <option value="INCOME">Entrada</option>
+                            <option value="EXPENSE">Saida</option>
+                        </select>
+                    </label>
+                    <label>Categoria<input name="category" maxlength="255" required></label>
+                    <label>Data<input name="date" type="date" required></label>
+                </div>
+                <button type="submit">Salvar</button>
+            </form>
+
+            <section class="card">
+                <h2>Transacoes</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Descricao</th>
+                                <th>Categoria</th>
+                                <th>Data</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTable"></tbody>
+                    </table>
+                </div>
+                <p id="emptyMessage" class="empty" hidden>Nenhuma transacao cadastrada.</p>
+            </section>
+        </section>
+
+        <p id="message" class="message" hidden></p>
+    </main>
+
+    <script src="/app.js"></script>
+</body>
+</html>
